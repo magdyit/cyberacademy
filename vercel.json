@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/analyze.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/analyze",
+      "dest": "/api/analyze.js"
+    }
+  ],
+  "env": {
+    "ANTHROPIC_API_KEY": "@anthropic-api-key"
+  }
+}

@@ -1,42 +1,56 @@
 // Vercel Serverless Function - Anthropic API Proxy
 export default async function handler(req, res) {
-  // Set CORS headers to allow requests from your GitHub Pages
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*'); // In production, replace * with your actual domain
+  // Set CORS headers - MUST be set before any response
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
 
-  // Handle preflight request
+  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
   try {
+    // Parse request body
     const { model, max_tokens, messages } = req.body;
 
-    // Validate required fields
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'Invalid request: messages array required' });
+    // Validate request
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ 
+        error: 'Bad request',
+        message: 'messages array is required and must not be empty' 
+      });
     }
 
-    // Get API key from environment variable
+    // Get API key from environment
     const apiKey = process.env.ANTHROPIC_API_KEY;
     
     if (!apiKey) {
-      return res.status(500).json({ error: 'Server configuration error: API key not set' });
+      console.error('ANTHROPIC_API_KEY not set in environment');
+      return res.status(500).json({ 
+        error: 'Server configuration error',
+        message: 'API key not configured. Please add ANTHROPIC_API_KEY to Vercel environment variables.' 
+      });
     }
 
+    // Log request (without sensitive data)
+    console.log('Processing request:', {
+      model: model || 'claude-sonnet-4-20250514',
+      messageCount: messages.length,
+      hasContent: messages[0]?.content ? 'yes' : 'no'
+    });
+
     // Make request to Anthropic API
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,20 +64,36 @@ export default async function handler(req, res) {
       })
     });
 
-    const data = await response.json();
+    const data = await anthropicResponse.json();
 
-    if (!response.ok) {
-      return res.status(response.status).json(data);
+    // If Anthropic API returned an error
+    if (!anthropicResponse.ok) {
+      console.error('Anthropic API error:', {
+        status: anthropicResponse.status,
+        error: data.error
+      });
+      
+      return res.status(anthropicResponse.status).json({
+        error: 'Anthropic API error',
+        message: data.error?.message || 'Unknown error from AI service',
+        details: data
+      });
     }
 
-    // Return the response
+    // Success - return the response
+    console.log('Success: Generated response');
     return res.status(200).json(data);
 
   } catch (error) {
-    console.error('Proxy error:', error);
+    console.error('Server error:', {
+      message: error.message,
+      stack: error.stack
+    });
+    
     return res.status(500).json({ 
       error: 'Internal server error',
-      message: error.message 
+      message: error.message,
+      details: 'Check Vercel logs for more information'
     });
   }
 }

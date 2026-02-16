@@ -1,8 +1,38 @@
 {
-  "version": 2,
-  "functions": {
-    "api/analyze.js": {
-      "runtime": "@vercel/node@3"
-    }
-  }
+  "version": 2
 }
+```
+
+That's it! Just these 3 lines. Vercel will auto-detect the `api` folder.
+
+### **Step 2: Ensure Correct File Location**
+
+Make absolutely sure in your GitHub repo:
+```
+api/analyze.js  ← Must be HERE
+```
+
+NOT:
+```
+analyze.js      ← Not here
+```
+
+### **Step 3: Clean Redeploy**
+
+In Vercel:
+1. **Settings** → **General** → Scroll down
+2. Click **"Delete Project"** (don't worry, your code is safe in GitHub!)
+3. Go back to Vercel home
+4. Click **"Add New Project"**
+5. **Import** your `magdyit/cyberacademy` repo again
+6. **Before clicking Deploy:**
+   - Click **"Environment Variables"**
+   - Add: `ANTHROPIC_API_KEY` = your API key
+   - Make sure it's for **Production, Preview, and Development**
+7. Click **"Deploy"**
+
+### **Step 4: Test**
+
+After deployment completes, visit:
+```
+https://cyberacademy-ochre.vercel.app/api/analyze

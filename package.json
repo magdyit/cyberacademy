@@ -1,13 +1,4 @@
 {
-  "name": "cybersec-academy-backend",
-  "version": "1.0.0",
-  "description": "Backend proxy for CyberSec Academy",
-  "main": "api/analyze.js",
-  "scripts": {
-    "dev": "vercel dev"
-  },
-  "dependencies": {},
-  "engines": {
-    "node": ">=18.x"
-  }
+  "name": "cyberacademy",
+  "version": "1.0.0"
 }

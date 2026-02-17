@@ -264,6 +264,11 @@ Examples:
                 </div>
                 
                 <div class="section">
+                    <h2>🛡️ Mitigation Controls</h2>
+                    <div id="mitigationContent"></div>
+                </div>
+
+                <div class="section">
                     <h2>📊 Visual Diagram</h2>
                     <div id="visualsContent"></div>
                 </div>
@@ -281,23 +286,8 @@ Examples:
             
             <div class="section">
                 <h2>⭐ Featured Security Articles</h2>
-                
-                <div class="featured-card" onclick="window.open('https://owasp.org/www-project-top-ten/', '_blank')">
-                    <span class="featured-badge">Essential</span>
-                    <h3>OWASP Top 10 Security Risks</h3>
-                    <p>The most critical web application security risks.</p>
-                </div>
-                
-                <div class="featured-card" onclick="window.open('https://www.cisa.gov/news-events/cybersecurity-advisories', '_blank')">
-                    <span class="featured-badge">Government</span>
-                    <h3>CISA Cybersecurity Advisories</h3>
-                    <p>Official security alerts from CISA.</p>
-                </div>
-                
-                <div class="featured-card" onclick="window.open('https://www.nist.gov/cyberframework', '_blank')">
-                    <span class="featured-badge">Framework</span>
-                    <h3>NIST Cybersecurity Framework</h3>
-                    <p>Comprehensive security risk management framework.</p>
+                <div id="articlesContainer">
+                    <p style="text-align:center;color:#666;padding:20px;">🔄 Loading latest security articles...</p>
                 </div>
             </div>
         </div>
@@ -414,24 +404,47 @@ Examples:
                     document.getElementById('loadingText').textContent = 'Analyzing content...';
                 }
                 
-                const messageContent = `You are a cybersecurity expert. Analyze this content and provide comprehensive learning materials.
+                const messageContent = `You are a senior cybersecurity expert. Analyze this content with DEEP TECHNICAL DETAIL.
 
-Content:
-${content.substring(0, 10000)}
+Content: ${content.substring(0, 10000)}
 
-Respond with ONLY valid JSON (no markdown):
+Return ONLY valid JSON (no markdown):
 {
-  "topic": "Main topic",
-  "tags": ["tag1", "tag2"],
-  "simplified": {
-    "overview": "Overview text",
-    "keyPoints": ["point1", "point2", "point3"],
-    "analogy": "Simple analogy"
+  "topic": "Specific topic name",
+  "tags": ["tag1","tag2","tag3","tag4"],
+  "technical": {
+    "overview": "Detailed 3-4 sentence technical overview with specific terminology, protocols, and mechanisms",
+    "howItWorks": ["Technical step 1 with protocols/mechanisms", "Step 2 with specific technical details", "Step 3 with implementation specifics", "Step 4 with technical depth"],
+    "technicalDetails": ["CVE examples or vulnerability classes", "Attack vectors and technical methods", "Protocol weaknesses exploited", "Technical indicators of compromise"],
+    "analogy": "Analogy that preserves technical complexity"
   },
-  "examples": [{"title": "Title", "scenario": "Scenario", "application": "Application"}],
-  "visualizations": {"diagram": {"mermaidCode": "graph TD\\nA-->B"}},
-  "resources": [{"title": "Title", "type": "Article", "description": "Desc", "url": "URL"}],
-  "quiz": [{"question": "Q?", "options": ["A","B","C","D"], "correctIndex": 0, "explanation": "Explanation"}]
+  "examples": [
+    {"title": "Real incident title", "scenario": "Detailed technical scenario with tools/techniques", "application": "Technical lessons and implementation details"},
+    {"title": "Second example", "scenario": "Technical details including CVEs or tools used", "application": "Defensive implementation"}
+  ],
+  "mitigations": [
+    {"title": "Control name", "type": "Preventive", "description": "Specific technical implementation", "implementation": "Exact config or tool", "severity": "High"},
+    {"title": "Control name", "type": "Detective", "description": "How this detects threats", "implementation": "SIEM rule or log source", "severity": "High"},
+    {"title": "Control name", "type": "Corrective", "description": "Recovery mechanism", "implementation": "Specific steps", "severity": "Medium"},
+    {"title": "Control name", "type": "Preventive", "description": "Additional prevention layer", "implementation": "Technical config", "severity": "Medium"},
+    {"title": "Control name", "type": "Deterrent", "description": "Deterrence mechanism", "implementation": "Policy or technical control", "severity": "Low"}
+  ],
+  "visualizations": {"diagram": {"mermaidCode": "graph TD\\nA[Internet]-->B[Firewall]\\nB-->C[DMZ]\\nC-->D[Internal]"}},
+  "resources": [
+    {"title": "NIST or specific standard", "type": "Standard", "description": "Specific guidance", "url": "https://csrc.nist.gov"},
+    {"title": "MITRE ATT&CK Technique", "type": "Framework", "description": "Specific technique", "url": "https://attack.mitre.org"},
+    {"title": "Security tool or resource", "type": "Tool", "description": "How to use", "url": "https://github.com"},
+    {"title": "Research or article", "type": "Article", "description": "Key findings", "url": "https://www.sans.org"}
+  ],
+  "quiz": [
+    {"question": "Technical question about specific mechanism or protocol?", "options": ["Technical option A","Option B","Option C","Option D"], "correctIndex": 0, "explanation": "Detailed technical explanation"},
+    {"question": "Question about attack vector or CVE class?", "options": ["A","B","C","D"], "correctIndex": 1, "explanation": "Why this is correct technically"},
+    {"question": "Question about detection or monitoring?", "options": ["A","B","C","D"], "correctIndex": 2, "explanation": "Technical detection explanation"},
+    {"question": "Question about mitigation implementation?", "options": ["A","B","C","D"], "correctIndex": 0, "explanation": "Technical mitigation details"},
+    {"question": "Advanced forensics or incident response question?", "options": ["A","B","C","D"], "correctIndex": 3, "explanation": "Technical response explanation"},
+    {"question": "Question about compliance or standards?", "options": ["A","B","C","D"], "correctIndex": 1, "explanation": "Standards explanation"},
+    {"question": "Question about tools or specific techniques?", "options": ["A","B","C","D"], "correctIndex": 2, "explanation": "Technical tool explanation"}
+  ]
 }`;
                 
                 const response = await fetch(BACKEND_URL, {
@@ -467,48 +480,132 @@ Respond with ONLY valid JSON (no markdown):
         });
         
         function displayResults(analysis) {
+            const t = analysis.technical || analysis.simplified || {};
+            // Technical Explanation
             document.getElementById('simplifiedContent').innerHTML = `
-                ${analysis.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                <p style="margin: 20px 0;">${analysis.simplified.overview}</p>
-                <ul>${analysis.simplified.keyPoints.map(p => `<li>${p}</li>`).join('')}</ul>
-                <p style="font-style: italic; margin-top: 20px;">"${analysis.simplified.analogy}"</p>
+                <div style="margin-bottom:20px;">${(analysis.tags||[]).map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                <div class="tech-block">
+                    <h4>📋 Technical Overview</h4>
+                    <p style="line-height:1.8;color:#ddd;">${t.overview || ''}</p>
+                </div>
+                <div class="tech-block">
+                    <h4>⚙️ How It Works — Step by Step</h4>
+                    <ol style="padding-left:20px;color:#ddd;">
+                        ${(t.howItWorks||t.keyPoints||[]).map(p => `<li style="margin:10px 0;line-height:1.7;">${p}</li>`).join('')}
+                    </ol>
+                </div>
+                ${(t.technicalDetails||[]).length ? `<div class="tech-block">
+                    <h4>🔬 Technical Details & Indicators</h4>
+                    <ul style="padding-left:20px;color:#ddd;">
+                        ${t.technicalDetails.map(d => `<li style="margin:8px 0;line-height:1.6;">${d}</li>`).join('')}
+                    </ul>
+                </div>` : ''}
+                <div class="tech-block" style="border-left:4px solid #fff;">
+                    <h4>💡 Analogy</h4>
+                    <p style="font-style:italic;color:#ccc;">"${t.analogy || ''}"</p>
+                </div>
             `;
-            
-            document.getElementById('examplesContent').innerHTML = analysis.examples.map((ex, i) => `
+
+            // Examples
+            document.getElementById('examplesContent').innerHTML = (analysis.examples||[]).map((ex, i) => `
                 <div class="example-box">
-                    <h4>Example ${i + 1}: ${ex.title}</h4>
-                    <p>${ex.scenario}</p>
-                    <p>${ex.application}</p>
+                    <h4>📌 Example ${i+1}: ${ex.title}</h4>
+                    <p><strong>Scenario:</strong> ${ex.scenario}</p>
+                    <p><strong>Technical Lesson:</strong> ${ex.application}</p>
                 </div>
             `).join('');
-            
+
+            // Mitigation Controls
+            const mitigations = analysis.mitigations || [];
+            const mitigationEl = document.getElementById('mitigationContent');
+            if (mitigationEl) {
+                mitigationEl.innerHTML = mitigations.length ? `
+                <div class="mitigation-grid">
+                    ${mitigations.map(m => {
+                        const tc = {Preventive:'control-preventive',Detective:'control-detective',Corrective:'control-corrective',Deterrent:'control-deterrent'}[m.type]||'control-preventive';
+                        const sc = m.severity==='High'?'severity-high':m.severity==='Medium'?'severity-med':'severity-low';
+                        return `<div class="mitigation-card">
+                            <h4>🛡️ ${m.title} <span class="severity-badge ${sc}">${m.severity}</span></h4>
+                            <span class="control-type ${tc}">${m.type}</span>
+                            <p style="color:#ddd;margin:10px 0;font-size:0.95rem;line-height:1.6;">${m.description}</p>
+                            <p style="color:#aaa;font-size:0.85rem;"><strong>Implementation:</strong> ${m.implementation}</p>
+                        </div>`;
+                    }).join('')}
+                </div>` : '<p style="color:#666;">No mitigation controls generated.</p>';
+            }
+
+            // Diagram
             if (analysis.visualizations?.diagram?.mermaidCode) {
                 const id = 'diagram-' + Date.now();
-                document.getElementById('visualsContent').innerHTML = `<div id="${id}"></div>`;
+                document.getElementById('visualsContent').innerHTML = `<div id="${id}" style="background:rgba(255,255,255,0.02);padding:20px;border-radius:10px;"></div>`;
                 mermaid.render(id + '-svg', analysis.visualizations.diagram.mermaidCode)
                     .then(({svg}) => document.getElementById(id).innerHTML = svg)
-                    .catch(() => document.getElementById(id).innerHTML = '<p>Diagram unavailable</p>');
+                    .catch(() => document.getElementById(id).innerHTML = '<p style="color:#666;">Diagram unavailable</p>');
             }
-            
-            document.getElementById('resourcesContent').innerHTML = analysis.resources.map(r => `
-                <div style="margin: 15px 0;">
-                    <h4>${r.title}</h4>
-                    <p>${r.description}</p>
-                    <a href="${r.url}" target="_blank" style="color: #fff;">View →</a>
+
+            // Resources
+            document.getElementById('resourcesContent').innerHTML = (analysis.resources||[]).map(r => {
+                let url = r.url||'#';
+                if (url!=='#' && !url.startsWith('http')) url='https://'+url;
+                return `<div style="background:rgba(255,255,255,0.03);border:2px solid #333;border-radius:10px;padding:20px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:20px;">
+                    <div>
+                        <span class="tag" style="margin-bottom:8px;display:inline-block;">${r.type}</span>
+                        <h4 style="margin:8px 0 5px;">${r.title}</h4>
+                        <p style="color:#999;font-size:0.9rem;">${r.description}</p>
+                    </div>
+                    <a href="${url}" target="_blank" style="background:#fff;color:#000;padding:8px 20px;border-radius:8px;font-weight:700;text-decoration:none;white-space:nowrap;font-size:0.9rem;">View →</a>
+                </div>`;
+            }).join('');
+
+            // Quiz with interactive answers
+            const quiz = analysis.quiz || [];
+            window._quizAnswers = {};
+            document.getElementById('quizContent').innerHTML = quiz.map((q, qi) => `
+                <div style="background:rgba(255,255,255,0.03);border:2px solid #333;border-radius:12px;padding:25px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:15px;font-size:1.05rem;line-height:1.5;">Q${qi+1}: ${q.question}</h4>
+                    ${q.options.map((opt, oi) => `
+                        <div class="quiz-option" data-q="${qi}" data-o="${oi}" onclick="pickAnswer(${qi},${oi})">
+                            <strong>${String.fromCharCode(65+oi)}.</strong> ${opt}
+                        </div>
+                    `).join('')}
+                    <div id="explain-${qi}" style="display:none;margin-top:15px;padding:15px;background:rgba(255,255,255,0.06);border-radius:8px;border-left:4px solid #fff;font-size:0.95rem;line-height:1.6;">
+                        ✅ <strong>Correct: ${String.fromCharCode(65+q.correctIndex)}</strong><br><br>${q.explanation}
+                    </div>
                 </div>
-            `).join('');
-            
-            document.getElementById('quizContent').innerHTML = analysis.quiz.map((q, i) => `
-                <div style="margin: 20px 0;">
-                    <h4>Q${i + 1}: ${q.question}</h4>
-                    ${q.options.map(o => `<div class="quiz-option">${o}</div>`).join('')}
-                    <p style="margin-top: 10px; color: #ccc;">${q.explanation}</p>
-                </div>
-            `).join('');
-            
+            `).join('') + `<div style="text-align:center;margin-top:10px;">
+                <button onclick="submitQuiz(${JSON.stringify(quiz).replace(/"/g,'&quot;')})" class="btn" style="margin:0 auto;">Submit Answers</button>
+            </div>
+            <div id="quizScore" style="display:none;text-align:center;padding:25px;background:rgba(255,255,255,0.08);border-radius:12px;margin-top:20px;font-size:1.5rem;font-weight:700;"></div>`;
+
             document.getElementById('loading').style.display = 'none';
             document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({behavior:'smooth'});
         }
+
+        window.pickAnswer = function(qi, oi) {
+            document.querySelectorAll(`[data-q="${qi}"]`).forEach(el => el.style.borderColor = '#333');
+            document.querySelector(`[data-q="${qi}"][data-o="${oi}"]`).style.borderColor = '#fff';
+            window._quizAnswers[qi] = oi;
+        };
+
+        window.submitQuiz = function(quiz) {
+            let score = 0;
+            quiz.forEach((q, qi) => {
+                const sel = window._quizAnswers?.[qi];
+                document.querySelectorAll(`[data-q="${qi}"]`).forEach(el => {
+                    el.style.pointerEvents = 'none';
+                    const oi = parseInt(el.dataset.o);
+                    if (oi === q.correctIndex) { el.style.background='rgba(50,200,50,0.2)'; el.style.borderColor='#5c5'; }
+                    else if (oi === sel) { el.style.background='rgba(255,50,50,0.2)'; el.style.borderColor='#f55'; }
+                });
+                document.getElementById(`explain-${qi}`).style.display = 'block';
+                if (sel === q.correctIndex) score++;
+            });
+            const pct = Math.round((score/quiz.length)*100);
+            const el = document.getElementById('quizScore');
+            el.style.display = 'block';
+            el.innerHTML = `${pct>=70?'🏆':'📚'} Score: ${score}/${quiz.length} (${pct}%)<div style="font-size:1rem;font-weight:400;margin-top:10px;color:#ccc;">${pct>=80?'Excellent! Strong technical understanding.':pct>=60?'Good effort. Review the explanations above.':'Keep studying — revisit the technical sections.'}</div>`;
+        };
         
         function saveToHistory(analysis) {
             const history = JSON.parse(localStorage.getItem('cyberSecHistory') || '[]');
@@ -532,7 +629,50 @@ Respond with ONLY valid JSON (no markdown):
             `).join('');
         }
         
+        // Dynamic Featured Articles
+        async function loadFeaturedArticles() {
+            const container = document.getElementById('articlesContainer');
+            try {
+                const month = new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+                const prompt = `You are a cybersecurity expert. List 6 most important cybersecurity resources and articles security professionals must read in ${month}. Include real URLs only. Return ONLY JSON: {"articles":[{"title":"Article title","source":"Source name","badge":"Badge like Critical/Advisory/Framework/Research","description":"Why important in 1 sentence","url":"https://real-url.com"}]}`;
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+                });
+                if (!response.ok) throw new Error('Failed');
+                const data = await response.json();
+                const text = data.content[0].text.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+                const parsed = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+                container.innerHTML = (parsed.articles||[]).map(a => `
+                    <div onclick="window.open('${a.url}','_blank')" style="display:flex;align-items:center;gap:15px;background:rgba(255,255,255,0.05);border:2px solid #333;border-radius:12px;padding:20px;margin-bottom:12px;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.borderColor='#fff';this.style.transform='translateX(5px)'" onmouseout="this.style.borderColor='#333';this.style.transform='translateX(0)'">
+                        <span style="background:#fff;color:#000;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;white-space:nowrap;">${a.badge}</span>
+                        <div>
+                            <h3 style="margin-bottom:4px;font-size:1rem;">${a.title}</h3>
+                            <p style="color:#999;font-size:0.85rem;">${a.source} — ${a.description}</p>
+                        </div>
+                    </div>`).join('');
+            } catch(e) {
+                // Fallback
+                const fallback = [
+                    {badge:'Essential',title:'OWASP Top 10 Security Risks',source:'OWASP',desc:'Most critical web application security risks.',url:'https://owasp.org/www-project-top-ten/'},
+                    {badge:'Advisory',title:'CISA Cybersecurity Advisories',source:'CISA',desc:'Latest official US government security alerts.',url:'https://www.cisa.gov/news-events/cybersecurity-advisories'},
+                    {badge:'Framework',title:'NIST Cybersecurity Framework',source:'NIST',desc:'Comprehensive framework for managing security risk.',url:'https://www.nist.gov/cyberframework'},
+                    {badge:'ATT&CK',title:'MITRE ATT&CK Matrix',source:'MITRE',desc:'Knowledge base of adversary tactics and techniques.',url:'https://attack.mitre.org'},
+                    {badge:'News',title:'Krebs on Security',source:'KrebsOnSecurity',desc:'In-depth security investigations and breach analysis.',url:'https://krebsonsecurity.com'},
+                    {badge:'Alerts',title:'The Hacker News',source:'THN',desc:'Latest cybersecurity news and vulnerability reports.',url:'https://thehackernews.com'}
+                ];
+                container.innerHTML = fallback.map(a => `
+                    <div onclick="window.open('${a.url}','_blank')" style="display:flex;align-items:center;gap:15px;background:rgba(255,255,255,0.05);border:2px solid #333;border-radius:12px;padding:20px;margin-bottom:12px;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.borderColor='#fff'" onmouseout="this.style.borderColor='#333'">
+                        <span style="background:#fff;color:#000;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;white-space:nowrap;">${a.badge}</span>
+                        <div><h3 style="margin-bottom:4px;font-size:1rem;">${a.title}</h3>
+                        <p style="color:#999;font-size:0.85rem;">${a.source} — ${a.desc}</p></div>
+                    </div>`).join('');
+            }
+        }
+
         loadArchive();
+        loadFeaturedArticles();
     </script>
 </body>
 </html>

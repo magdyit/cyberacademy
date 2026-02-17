@@ -404,55 +404,19 @@ Examples:
                     document.getElementById('loadingText').textContent = 'Analyzing content...';
                 }
                 
-                const messageContent = `You are a senior cybersecurity expert. Analyze this content with DEEP TECHNICAL DETAIL.
+                const messageContent = `You are a senior cybersecurity expert. Analyze the content below and return ONLY a valid JSON object. No markdown, no text before or after the JSON.
 
-Content: ${content.substring(0, 10000)}
+CONTENT: ${content.substring(0, 6000)}
 
-Return ONLY valid JSON (no markdown):
-{
-  "topic": "Specific topic name",
-  "tags": ["tag1","tag2","tag3","tag4"],
-  "technical": {
-    "overview": "Detailed 3-4 sentence technical overview with specific terminology, protocols, and mechanisms",
-    "howItWorks": ["Technical step 1 with protocols/mechanisms", "Step 2 with specific technical details", "Step 3 with implementation specifics", "Step 4 with technical depth"],
-    "technicalDetails": ["CVE examples or vulnerability classes", "Attack vectors and technical methods", "Protocol weaknesses exploited", "Technical indicators of compromise"],
-    "analogy": "Analogy that preserves technical complexity"
-  },
-  "examples": [
-    {"title": "Real incident title", "scenario": "Detailed technical scenario with tools/techniques", "application": "Technical lessons and implementation details"},
-    {"title": "Second example", "scenario": "Technical details including CVEs or tools used", "application": "Defensive implementation"}
-  ],
-  "mitigations": [
-    {"title": "Control name", "type": "Preventive", "description": "Specific technical implementation", "implementation": "Exact config or tool", "severity": "High"},
-    {"title": "Control name", "type": "Detective", "description": "How this detects threats", "implementation": "SIEM rule or log source", "severity": "High"},
-    {"title": "Control name", "type": "Corrective", "description": "Recovery mechanism", "implementation": "Specific steps", "severity": "Medium"},
-    {"title": "Control name", "type": "Preventive", "description": "Additional prevention layer", "implementation": "Technical config", "severity": "Medium"},
-    {"title": "Control name", "type": "Deterrent", "description": "Deterrence mechanism", "implementation": "Policy or technical control", "severity": "Low"}
-  ],
-  "visualizations": {"diagram": {"mermaidCode": "graph TD\\nA[Internet]-->B[Firewall]\\nB-->C[DMZ]\\nC-->D[Internal]"}},
-  "resources": [
-    {"title": "NIST or specific standard", "type": "Standard", "description": "Specific guidance", "url": "https://csrc.nist.gov"},
-    {"title": "MITRE ATT&CK Technique", "type": "Framework", "description": "Specific technique", "url": "https://attack.mitre.org"},
-    {"title": "Security tool or resource", "type": "Tool", "description": "How to use", "url": "https://github.com"},
-    {"title": "Research or article", "type": "Article", "description": "Key findings", "url": "https://www.sans.org"}
-  ],
-  "quiz": [
-    {"question": "Technical question about specific mechanism or protocol?", "options": ["Technical option A","Option B","Option C","Option D"], "correctIndex": 0, "explanation": "Detailed technical explanation"},
-    {"question": "Question about attack vector or CVE class?", "options": ["A","B","C","D"], "correctIndex": 1, "explanation": "Why this is correct technically"},
-    {"question": "Question about detection or monitoring?", "options": ["A","B","C","D"], "correctIndex": 2, "explanation": "Technical detection explanation"},
-    {"question": "Question about mitigation implementation?", "options": ["A","B","C","D"], "correctIndex": 0, "explanation": "Technical mitigation details"},
-    {"question": "Advanced forensics or incident response question?", "options": ["A","B","C","D"], "correctIndex": 3, "explanation": "Technical response explanation"},
-    {"question": "Question about compliance or standards?", "options": ["A","B","C","D"], "correctIndex": 1, "explanation": "Standards explanation"},
-    {"question": "Question about tools or specific techniques?", "options": ["A","B","C","D"], "correctIndex": 2, "explanation": "Technical tool explanation"}
-  ]
-}`;
-                
+JSON structure (fill in real values, keep strings concise):
+{"topic":"topic name","tags":["t1","t2","t3"],"technical":{"overview":"3 sentence technical overview with protocols and mechanisms","howItWorks":["Step 1: technical detail","Step 2: technical detail","Step 3: technical detail","Step 4: technical detail"],"technicalDetails":["CVE class or attack vector 1","Technical indicator or method 2","Protocol weakness 3"],"analogy":"Technical analogy"},"examples":[{"title":"Real incident","scenario":"Technical attack scenario with tools used","application":"Defense lesson"},{"title":"Second example","scenario":"Technical scenario","application":"Defense"}],"mitigations":[{"title":"Control 1","type":"Preventive","description":"Technical prevention detail","implementation":"Specific tool or config","severity":"High"},{"title":"Control 2","type":"Detective","description":"Detection mechanism","implementation":"SIEM rule or log","severity":"High"},{"title":"Control 3","type":"Corrective","description":"Recovery step","implementation":"Specific action","severity":"Medium"},{"title":"Control 4","type":"Preventive","description":"Additional layer","implementation":"Technical config","severity":"Medium"},{"title":"Control 5","type":"Deterrent","description":"Deterrence method","implementation":"Policy or control","severity":"Low"}],"visualizations":{"diagram":{"mermaidCode":"graph TD\nA[Start]-->B[Process]\nB-->C[End]"}},"resources":[{"title":"Resource 1","type":"Standard","description":"Brief desc","url":"https://csrc.nist.gov"},{"title":"Resource 2","type":"Framework","description":"Brief desc","url":"https://attack.mitre.org"},{"title":"Resource 3","type":"Tool","description":"Brief desc","url":"https://www.sans.org"},{"title":"Resource 4","type":"Article","description":"Brief desc","url":"https://owasp.org"}],"quiz":[{"question":"Technical Q1?","options":["A","B","C","D"],"correctIndex":0,"explanation":"Why A is correct"},{"question":"Attack vector Q2?","options":["A","B","C","D"],"correctIndex":1,"explanation":"Why B is correct"},{"question":"Detection Q3?","options":["A","B","C","D"],"correctIndex":2,"explanation":"Why C is correct"},{"question":"Mitigation Q4?","options":["A","B","C","D"],"correctIndex":3,"explanation":"Why D is correct"},{"question":"Forensics Q5?","options":["A","B","C","D"],"correctIndex":0,"explanation":"Why A is correct"},{"question":"Standards Q6?","options":["A","B","C","D"],"correctIndex":1,"explanation":"Why B is correct"},{"question":"Tools Q7?","options":["A","B","C","D"],"correctIndex":2,"explanation":"Why C is correct"}]}`;
+
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'claude-sonnet-4-20250514',
-                        max_tokens: 4000,
+                        model: 'claude-3-5-haiku-20241022',
+                        max_tokens: 8000,
                         messages: [{ role: 'user', content: messageContent }]
                     })
                 });
@@ -463,12 +427,23 @@ Return ONLY valid JSON (no markdown):
                 }
                 
                 const data = await response.json();
-                const text = data.content[0].text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                const rawText = data.content[0].text;
+                const text = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 
+                // Try to extract JSON
                 const jsonMatch = text.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) throw new Error('No valid JSON found');
+                if (!jsonMatch) {
+                    console.error('Raw response:', rawText);
+                    throw new Error('No valid JSON found. Response preview: ' + rawText.substring(0, 200));
+                }
                 
-                const analysis = JSON.parse(jsonMatch[0]);
+                let analysis;
+                try {
+                    analysis = JSON.parse(jsonMatch[0]);
+                } catch(parseErr) {
+                    console.error('JSON parse error:', parseErr, 'Text:', jsonMatch[0].substring(0, 500));
+                    throw new Error('JSON parse failed: ' + parseErr.message);
+                }
                 displayResults(analysis);
                 saveToHistory(analysis);
             } catch (error) {

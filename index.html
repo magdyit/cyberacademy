@@ -131,8 +131,8 @@
             transition: transform 0.3s;
         }
         
-        .btn:hover { transform: translateY(-2px); }
-        .btn:disabled { opacity: 0.5; }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .loading {
             display: none;
@@ -153,53 +153,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         
         .results { display: none; }
-        
-        .featured-card {
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid #333;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .featured-card:hover {
-            border-color: #fff;
-            transform: translateX(5px);
-        }
-        
-        .featured-badge {
-            display: inline-block;
-            background: #fff;
-            color: #000;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .news-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px solid #333;
-            border-radius: 10px;
-            padding: 20px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        
-        .news-card:hover {
-            transform: translateY(-5px);
-            border-color: #fff;
-        }
         
         .tag {
             display: inline-block;
@@ -232,22 +185,28 @@
         .quiz-option:hover { background: rgba(50, 50, 50, 0.3); border-color: #fff; }
         .quiz-option.selected { background: rgba(255, 255, 255, 0.2); border-color: #fff; }
         
-        .archive-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-        
-        .archive-card {
-            background: rgba(50, 50, 50, 0.3);
+        .featured-card {
+            background: rgba(255, 255, 255, 0.08);
             border: 2px solid #333;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 15px;
             cursor: pointer;
             transition: all 0.3s;
         }
         
-        .archive-card:hover { border-color: #fff; transform: translateY(-3px); }
+        .featured-card:hover { border-color: #fff; transform: translateX(5px); }
+        
+        .featured-badge {
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -290,7 +249,7 @@ Examples:
             
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>Analyzing content...</p>
+                <p id="loadingText">Analyzing content...</p>
             </div>
             
             <div class="results" id="results">
@@ -341,30 +300,11 @@ Examples:
                     <p>Comprehensive security risk management framework.</p>
                 </div>
             </div>
-            
-            <div class="section">
-                <h2>🔥 Latest Cybersecurity News</h2>
-                <div class="news-grid" id="newsGrid">
-                    <div class="news-card" onclick="window.open('https://www.bleepingcomputer.com/', '_blank')">
-                        <h3>BleepingComputer</h3>
-                        <p>Latest vulnerabilities & patches</p>
-                    </div>
-                    <div class="news-card" onclick="window.open('https://krebsonsecurity.com/', '_blank')">
-                        <h3>Krebs on Security</h3>
-                        <p>In-depth investigations</p>
-                    </div>
-                    <div class="news-card" onclick="window.open('https://www.darkreading.com/', '_blank')">
-                        <h3>Dark Reading</h3>
-                        <p>Enterprise security insights</p>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <div class="tab-content" id="archiveTab">
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                 <h2>📚 Your Archive</h2>
-                <button class="btn" id="clearHistory" style="margin: 0; padding: 10px 20px;">Clear All</button>
             </div>
             <div id="archiveContent"></div>
         </div>
@@ -377,29 +317,6 @@ Examples:
         }
         
         mermaid.initialize({ startOnLoad: false, theme: 'dark' });
-        
-        // PDF text extraction
-        async function extractPDFText(file) {
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-                const pdf = await loadingTask.promise;
-                let fullText = '';
-                
-                const maxPages = Math.min(pdf.numPages, 30); // Limit to 30 pages
-                for (let i = 1; i <= maxPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map(item => item.str).join(' ');
-                    fullText += pageText + '\n';
-                }
-                
-                return fullText;
-            } catch (error) {
-                console.error('PDF extraction error:', error);
-                throw new Error('Failed to extract PDF text. Please ensure the file is not corrupted or password-protected.');
-            }
-        }
         
         // Matrix effect
         const canvas = document.getElementById('matrix');
@@ -427,6 +344,28 @@ Examples:
         }
         setInterval(drawMatrix, 50);
         
+        // PDF extraction
+        async function extractPDFText(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                const pdf = await loadingTask.promise;
+                let fullText = '';
+                
+                const maxPages = Math.min(pdf.numPages, 30);
+                for (let i = 1; i <= maxPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                }
+                
+                return fullText;
+            } catch (error) {
+                throw new Error('Failed to extract PDF text.');
+            }
+        }
+        
         // Tab navigation
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -438,17 +377,14 @@ Examples:
             });
         });
         
-        // File handling
         document.getElementById('fileInput').addEventListener('change', (e) => {
             if (e.target.files[0]) {
                 document.getElementById('fileName').textContent = '✓ ' + e.target.files[0].name;
             }
         });
         
-        // BACKEND CONFIGURATION
-        // Replace this URL with your Vercel deployment URL after deploying
-        const BACKEND_URL = 'cyberacademy-qncfovsig-magdys-projects-520a5a0c.vercel.app';
-        // Example: const BACKEND_URL = 'https://wild-night-b9aa.eng-mit.workers.dev';
+        // BACKEND URL - Already configured for your Vercel deployment
+        const BACKEND_URL = 'https://wild-night-b9aa.eng-mit.workers.dev';
         
         // Analyze
         document.getElementById('analyzeBtn').addEventListener('click', async () => {
@@ -460,86 +396,47 @@ Examples:
                 return;
             }
             
-            // Check if backend URL is configured
-            if (BACKEND_URL.includes('YOUR-PROJECT')) {
-                alert('⚠️ Backend not configured!\n\nPlease:\n1. Deploy the backend to Vercel\n2. Update the BACKEND_URL in the code with your deployment URL\n\nSee README.md for instructions.');
-                return;
-            }
-            
             document.getElementById('uploadBox').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
             document.getElementById('results').style.display = 'none';
             
             try {
-                let messageContent;
                 let content = textContent;
                 
                 if (file) {
                     if (file.type === 'application/pdf') {
-                        document.querySelector('#loading p').textContent = 'Extracting PDF text...';
+                        document.getElementById('loadingText').textContent = 'Extracting PDF text...';
                         content = await extractPDFText(file);
                         if (!content || content.trim().length < 50) {
                             throw new Error('Could not extract enough text from PDF');
                         }
-                        document.querySelector('#loading p').textContent = 'Analyzing content...';
-                    } else if (file.type.startsWith('image/')) {
-                        document.querySelector('#loading p').textContent = 'Processing image...';
-                        const base64 = await new Promise((resolve, reject) => {
-                            const reader = new FileReader();
-                            reader.onload = () => resolve(reader.result.split(',')[1]);
-                            reader.onerror = reject;
-                            reader.readAsDataURL(file);
-                        });
-                        
-                        messageContent = [
-                            {
-                                type: 'image',
-                                source: { type: 'base64', media_type: file.type, data: base64 }
-                            },
-                            {
-                                type: 'text',
-                                text: 'Analyze this cybersecurity diagram and provide detailed learning materials in JSON format: {"topic":"","tags":[],"simplified":{"overview":"","keyPoints":[],"analogy":""},"examples":[{"title":"","scenario":"","application":""}],"visualizations":{"diagram":{"mermaidCode":"graph TD\\nA-->B"}},"resources":[{"title":"","type":"","description":"","url":""}],"quiz":[{"question":"","options":[],"correctIndex":0,"explanation":""}]}'
-                            }
-                        ];
                     }
+                    document.getElementById('loadingText').textContent = 'Analyzing content...';
                 }
                 
-                if (!messageContent) {
-                    messageContent = `You are a cybersecurity expert. Analyze this content and provide comprehensive learning materials.
+                const messageContent = `You are a cybersecurity expert. Analyze this content and provide comprehensive learning materials.
 
 Content:
 ${content.substring(0, 10000)}
 
-Respond with ONLY valid JSON (no markdown, no code blocks):
+Respond with ONLY valid JSON (no markdown):
 {
-  "topic": "Main topic title",
-  "tags": ["tag1", "tag2", "tag3"],
+  "topic": "Main topic",
+  "tags": ["tag1", "tag2"],
   "simplified": {
-    "overview": "Clear 2-3 sentence overview",
-    "keyPoints": ["point1", "point2", "point3", "point4", "point5"],
+    "overview": "Overview text",
+    "keyPoints": ["point1", "point2", "point3"],
     "analogy": "Simple analogy"
   },
-  "examples": [
-    {"title": "Example title", "scenario": "Scenario description", "application": "How it applies"}
-  ],
-  "visualizations": {
-    "diagram": {"mermaidCode": "graph TD\\nA[Start]-->B[Process]\\nB-->C[End]"}
-  },
-  "resources": [
-    {"title": "Resource title", "type": "Article", "description": "Description", "url": "https://example.com"}
-  ],
-  "quiz": [
-    {"question": "Question?", "options": ["A", "B", "C", "D"], "correctIndex": 0, "explanation": "Why correct"}
-  ]
+  "examples": [{"title": "Title", "scenario": "Scenario", "application": "Application"}],
+  "visualizations": {"diagram": {"mermaidCode": "graph TD\\nA-->B"}},
+  "resources": [{"title": "Title", "type": "Article", "description": "Desc", "url": "URL"}],
+  "quiz": [{"question": "Q?", "options": ["A","B","C","D"], "correctIndex": 0, "explanation": "Explanation"}]
 }`;
-                }
                 
-                // Call backend proxy instead of Anthropic API directly
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: 'claude-sonnet-4-20250514',
                         max_tokens: 4000,
@@ -549,27 +446,20 @@ Respond with ONLY valid JSON (no markdown, no code blocks):
                 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error?.message || errorData.message || `Request failed: ${response.status}`);
+                    throw new Error(errorData.message || `Request failed: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 const text = data.content[0].text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 
                 const jsonMatch = text.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error('No valid JSON found in response');
-                }
+                if (!jsonMatch) throw new Error('No valid JSON found');
                 
                 const analysis = JSON.parse(jsonMatch[0]);
-                
-                if (!analysis.topic || !analysis.simplified) {
-                    throw new Error('Invalid analysis structure');
-                }
-                
                 displayResults(analysis);
                 saveToHistory(analysis);
             } catch (error) {
-                console.error('Analysis error:', error);
+                console.error('Error:', error);
                 alert('Analysis failed: ' + error.message);
                 document.getElementById('uploadBox').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
@@ -577,119 +467,49 @@ Respond with ONLY valid JSON (no markdown, no code blocks):
         });
         
         function displayResults(analysis) {
-            // Simplified
             document.getElementById('simplifiedContent').innerHTML = `
                 ${analysis.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                <p style="margin: 20px 0; font-size: 1.1rem;">${analysis.simplified.overview}</p>
-                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <h4>Key Points:</h4>
-                    <ul style="margin: 10px 0; padding-left: 20px;">
-                        ${analysis.simplified.keyPoints.map(p => `<li style="margin: 8px 0;">${p}</li>`).join('')}
-                    </ul>
-                </div>
-                <p style="font-style: italic; color: #ccc; margin-top: 20px;">"${analysis.simplified.analogy}"</p>
+                <p style="margin: 20px 0;">${analysis.simplified.overview}</p>
+                <ul>${analysis.simplified.keyPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+                <p style="font-style: italic; margin-top: 20px;">"${analysis.simplified.analogy}"</p>
             `;
             
-            // Examples
             document.getElementById('examplesContent').innerHTML = analysis.examples.map((ex, i) => `
                 <div class="example-box">
                     <h4>Example ${i + 1}: ${ex.title}</h4>
-                    <p><strong>Scenario:</strong> ${ex.scenario}</p>
-                    <p><strong>Application:</strong> ${ex.application}</p>
+                    <p>${ex.scenario}</p>
+                    <p>${ex.application}</p>
                 </div>
             `).join('');
             
-            // Diagram
             if (analysis.visualizations?.diagram?.mermaidCode) {
                 const id = 'diagram-' + Date.now();
-                document.getElementById('visualsContent').innerHTML = `<div id="${id}" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 10px;"></div>`;
-                setTimeout(() => {
-                    mermaid.render(id + '-svg', analysis.visualizations.diagram.mermaidCode)
-                        .then(({svg}) => document.getElementById(id).innerHTML = svg)
-                        .catch(() => document.getElementById(id).innerHTML = '<p>Diagram unavailable</p>');
-                }, 100);
+                document.getElementById('visualsContent').innerHTML = `<div id="${id}"></div>`;
+                mermaid.render(id + '-svg', analysis.visualizations.diagram.mermaidCode)
+                    .then(({svg}) => document.getElementById(id).innerHTML = svg)
+                    .catch(() => document.getElementById(id).innerHTML = '<p>Diagram unavailable</p>');
             }
             
-            // Resources with proper links
-            document.getElementById('resourcesContent').innerHTML = `
-                <div style="display: grid; gap: 20px;">
-                    ${analysis.resources.map(r => {
-                        let url = r.url;
-                        if (!url.startsWith('http')) {
-                            if (url.toLowerCase().includes('search for:')) {
-                                const searchTerm = url.replace(/search for:/i, '').trim();
-                                url = `https://www.google.com/search?q=${encodeURIComponent(searchTerm + ' cybersecurity')}`;
-                            } else {
-                                url = 'https://' + url;
-                            }
-                        }
-                        return `
-                        <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 10px; border: 2px solid #333;">
-                            <div style="display: inline-block; background: #fff; color: #000; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; margin-bottom: 10px;">${r.type}</div>
-                            <h4 style="margin: 10px 0;">${r.title}</h4>
-                            <p style="margin: 10px 0; color: #ccc;">${r.description}</p>
-                            <a href="${url}" target="_blank" style="color: #fff; text-decoration: none; font-weight: 600;">View Resource →</a>
-                        </div>
-                    `}).join('')}
+            document.getElementById('resourcesContent').innerHTML = analysis.resources.map(r => `
+                <div style="margin: 15px 0;">
+                    <h4>${r.title}</h4>
+                    <p>${r.description}</p>
+                    <a href="${r.url}" target="_blank" style="color: #fff;">View →</a>
                 </div>
-            `;
+            `).join('');
             
-            // Quiz
-            document.getElementById('quizContent').innerHTML = `
-                ${analysis.quiz.map((q, qi) => `
-                    <div style="margin: 25px 0;">
-                        <h4 style="margin-bottom: 15px;">Question ${qi + 1}: ${q.question}</h4>
-                        ${q.options.map((o, oi) => `
-                            <div class="quiz-option" data-q="${qi}" data-o="${oi}">
-                                ${String.fromCharCode(65 + oi)}. ${o}
-                            </div>
-                        `).join('')}
-                        <div id="explain-${qi}" style="display: none; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                            <strong>✓ Correct: ${String.fromCharCode(65 + q.correctIndex)}</strong>
-                            <p style="margin-top: 10px;">${q.explanation}</p>
-                        </div>
-                    </div>
-                `).join('')}
-                <button class="btn" id="submitQuiz" style="margin-top: 20px;">Check Answers</button>
-            `;
-            
-            setupQuiz(analysis.quiz);
+            document.getElementById('quizContent').innerHTML = analysis.quiz.map((q, i) => `
+                <div style="margin: 20px 0;">
+                    <h4>Q${i + 1}: ${q.question}</h4>
+                    ${q.options.map(o => `<div class="quiz-option">${o}</div>`).join('')}
+                    <p style="margin-top: 10px; color: #ccc;">${q.explanation}</p>
+                </div>
+            `).join('');
             
             document.getElementById('loading').style.display = 'none';
             document.getElementById('results').style.display = 'block';
         }
         
-        function setupQuiz(quizData) {
-            const selected = {};
-            document.querySelectorAll('.quiz-option').forEach(opt => {
-                opt.addEventListener('click', (e) => {
-                    const q = e.target.dataset.q;
-                    document.querySelectorAll(`[data-q="${q}"]`).forEach(o => o.classList.remove('selected'));
-                    e.target.classList.add('selected');
-                    selected[q] = parseInt(e.target.dataset.o);
-                });
-            });
-            
-            document.getElementById('submitQuiz').addEventListener('click', () => {
-                quizData.forEach((q, qi) => {
-                    document.querySelectorAll(`[data-q="${qi}"]`).forEach(opt => {
-                        opt.style.pointerEvents = 'none';
-                        const oi = parseInt(opt.dataset.o);
-                        if (oi === q.correctIndex) {
-                            opt.style.background = 'rgba(0, 200, 150, 0.3)';
-                            opt.style.borderColor = '#0c8';
-                        } else if (oi === selected[qi]) {
-                            opt.style.background = 'rgba(255, 50, 50, 0.3)';
-                            opt.style.borderColor = '#f33';
-                        }
-                    });
-                    document.getElementById(`explain-${qi}`).style.display = 'block';
-                });
-                document.getElementById('submitQuiz').style.display = 'none';
-            });
-        }
-        
-        // Archive
         function saveToHistory(analysis) {
             const history = JSON.parse(localStorage.getItem('cyberSecHistory') || '[]');
             history.unshift({ id: Date.now(), ...analysis });
@@ -704,20 +524,13 @@ Respond with ONLY valid JSON (no markdown, no code blocks):
                 document.getElementById('archiveContent').innerHTML = '<p style="text-align:center;padding:60px;">No history yet</p>';
                 return;
             }
-            document.getElementById('archiveContent').innerHTML = `<div class="archive-grid">${history.map(item => `
-                <div class="archive-card">
+            document.getElementById('archiveContent').innerHTML = history.map(item => `
+                <div style="background: rgba(50,50,50,0.3); border: 2px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
                     <h3>${item.topic}</h3>
                     <p>${item.simplified.overview.substring(0, 120)}...</p>
                 </div>
-            `).join('')}</div>`;
+            `).join('');
         }
-        
-        document.getElementById('clearHistory').addEventListener('click', () => {
-            if (confirm('Clear all history?')) {
-                localStorage.removeItem('cyberSecHistory');
-                loadArchive();
-            }
-        });
         
         loadArchive();
     </script>

@@ -592,17 +592,74 @@ JSON structure (fill in real values, keep strings concise):
         function loadArchive() {
             const history = JSON.parse(localStorage.getItem('cyberSecHistory') || '[]');
             document.getElementById('archiveCount').textContent = history.length;
+
             if (!history.length) {
-                document.getElementById('archiveContent').innerHTML = '<p style="text-align:center;padding:60px;">No history yet</p>';
+                document.getElementById('archiveContent').innerHTML = `
+                    <div style="text-align:center;padding:60px;background:rgba(50,50,50,0.2);border:2px solid #333;border-radius:15px;">
+                        <p style="font-size:1.2rem;color:#666;">📂 No analyses saved yet.</p>
+                        <p style="color:#555;margin-top:10px;">Run an analysis and it will appear here.</p>
+                    </div>`;
                 return;
             }
-            document.getElementById('archiveContent').innerHTML = history.map(item => `
-                <div style="background: rgba(50,50,50,0.3); border: 2px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
-                    <h3>${item.topic}</h3>
-                    <p>${item.simplified.overview.substring(0, 120)}...</p>
+
+            document.getElementById('archiveContent').innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <h2 style="color:#fff;">📚 Saved Analyses (${history.length})</h2>
+                    <button onclick="clearArchive()" style="padding:8px 20px;background:transparent;border:2px solid #f55;border-radius:8px;color:#f55;cursor:pointer;font-weight:600;">🗑️ Clear All</button>
                 </div>
-            `).join('');
+                ${history.map(item => {
+                    const t = item.technical || item.simplified || {};
+                    const overview = (t.overview || t.overview || '').substring(0, 140);
+                    const tags = (item.tags || []).slice(0, 4);
+                    const date = new Date(item.id).toLocaleDateString('en-US', {day:'numeric',month:'short',year:'numeric'});
+                    return `
+                    <div style="background:rgba(50,50,50,0.3);border:2px solid #333;border-radius:12px;padding:20px;margin-bottom:15px;cursor:pointer;transition:all 0.3s;"
+                         onmouseover="this.style.borderColor='#fff';this.style.transform='translateY(-3px)'"
+                         onmouseout="this.style.borderColor='#333';this.style.transform='translateY(0)'">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
+                            <h3 style="color:#fff;font-size:1.1rem;" onclick="loadFromArchive(${item.id})">${item.topic}</h3>
+                            <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;margin-left:15px;">
+                                <span style="color:#666;font-size:0.8rem;">${date}</span>
+                                <button onclick="deleteFromArchive(${item.id})" style="background:transparent;border:1px solid #555;border-radius:6px;color:#f55;cursor:pointer;padding:3px 10px;font-size:0.8rem;">✕</button>
+                            </div>
+                        </div>
+                        <p style="color:#999;font-size:0.9rem;line-height:1.5;margin-bottom:12px;" onclick="loadFromArchive(${item.id})">${overview}${overview.length >= 140 ? '...' : ''}</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                            <button onclick="loadFromArchive(${item.id})" style="padding:6px 18px;background:#fff;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.85rem;">Load →</button>
+                        </div>
+                    </div>`;
+                }).join('')}`;
         }
+
+        window.loadFromArchive = function(id) {
+            const history = JSON.parse(localStorage.getItem('cyberSecHistory') || '[]');
+            const item = history.find(h => h.id === id);
+            if (!item) return;
+            // Switch to analyze tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="analyze"]').classList.add('active');
+            document.getElementById('analyzeTab').classList.add('active');
+            // Hide upload, show results
+            document.getElementById('uploadBox').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            displayResults(item);
+        };
+
+        window.deleteFromArchive = function(id) {
+            let history = JSON.parse(localStorage.getItem('cyberSecHistory') || '[]');
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('cyberSecHistory', JSON.stringify(history));
+            loadArchive();
+        };
+
+        window.clearArchive = function() {
+            if (confirm('Delete all saved analyses?')) {
+                localStorage.removeItem('cyberSecHistory');
+                loadArchive();
+            }
+        };
         
         // Dynamic Featured Articles
         async function loadFeaturedArticles() {
